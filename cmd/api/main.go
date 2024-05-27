@@ -38,7 +38,7 @@ func main() {
 		MaxAge:           300,
 	}))
 	v1Router := chi.NewRouter()
-	router.Mount("api/v1", v1Router)
+	router.Mount("/api/v1", v1Router)
 	server := http.Server{
 		Handler: router,
 		Addr:    ":" + portStr,
