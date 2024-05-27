@@ -70,6 +70,8 @@ func main() {
 	v1Router.Get("/users", handler.HandlerFetchAllUsers)
 	v1Router.Post("/login", handler.LoginUser)
 	v1Router.Get("/get_user", authHandler.AuthMiddleware(handler.GetUserByJWT))
+	v1Router.Post("/albums", authHandler.AuthMiddleware(handler.CreateAlbum))
+	v1Router.Post("/photos", authHandler.AuthMiddleware(handler.CreatePhoto))
 
 	router.Mount("/api/v1", v1Router)
 	server := http.Server{

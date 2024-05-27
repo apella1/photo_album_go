@@ -20,9 +20,10 @@ INSERT INTO
         created_at,
         updated_at,
         title,
+        photos,
         user_id
     )
-VALUES($1, $2, $3, $4, $5)
+VALUES($1, $2, $3, $4, $5, $6)
 RETURNING id, created_at, updated_at, title, photos, user_id
 `
 
@@ -31,6 +32,7 @@ type CreateAlbumParams struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Title     string
+	Photos    [][]byte
 	UserID    uuid.UUID
 }
 
@@ -40,6 +42,7 @@ func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album
 		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.Title,
+		pq.Array(arg.Photos),
 		arg.UserID,
 	)
 	var i Album
