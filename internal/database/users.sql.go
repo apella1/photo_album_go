@@ -8,6 +8,8 @@ package database
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -27,7 +29,7 @@ RETURNING id, created_at, updated_at, first_name, last_name, username, email, pa
 `
 
 type CreateUserParams struct {
-	ID        int32
+	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	FirstName string
@@ -80,4 +82,30 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Password,
 	)
 	return i, err
+}
+
+const isUniqueEmail = `-- name: IsUniqueEmail :one
+SELECT 1
+FROM users
+WHERE email = $1
+`
+
+func (q *Queries) IsUniqueEmail(ctx context.Context, email string) (int32, error) {
+	row := q.db.QueryRowContext(ctx, isUniqueEmail, email)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const isUniqueUsername = `-- name: IsUniqueUsername :one
+SELECT 1
+FROM users
+WHERE username = $1
+`
+
+func (q *Queries) IsUniqueUsername(ctx context.Context, username string) (int32, error) {
+	row := q.db.QueryRowContext(ctx, isUniqueUsername, username)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
 }

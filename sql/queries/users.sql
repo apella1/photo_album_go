@@ -15,3 +15,13 @@ RETURNING *;
 
 -- name: GetUserByEmail :one
 SELECT * FROM users WHERE email = $1;
+
+-- name: IsUniqueEmail :one
+SELECT 1
+FROM users
+WHERE email = $1;
+
+-- name: IsUniqueUsername :one
+SELECT 1
+FROM users
+WHERE username = $1;

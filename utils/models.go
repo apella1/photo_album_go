@@ -3,10 +3,12 @@ package utils
 import (
 	"album/internal/database"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
-	ID        int       `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	FirstName string    `json:"first_name"`
@@ -18,7 +20,7 @@ type User struct {
 
 func DatabaseUserToUser(dbUser database.User) User {
 	return User{
-		ID:        int(dbUser.ID),
+		ID:        dbUser.ID,
 		CreatedAt: dbUser.CreatedAt,
 		UpdatedAt: dbUser.UpdatedAt,
 		FirstName: dbUser.FirstName,
