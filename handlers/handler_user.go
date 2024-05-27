@@ -81,3 +81,13 @@ func (h *Handler) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.RespondWithJSON(w, 200, utils.DatabaseUserToUser(user))
 }
+
+func (h *Handler) HandlerFetchAllUsers(w http.ResponseWriter, r *http.Request) {
+	dbUsers, err := h.Cfg.DB.FetchAllUsers(r.Context())
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error fetching users, %v", err))
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseUsersToUsers(dbUsers))
+}

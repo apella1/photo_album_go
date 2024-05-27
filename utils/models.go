@@ -30,3 +30,12 @@ func DatabaseUserToUser(dbUser database.User) User {
 		Password:  dbUser.Password,
 	}
 }
+
+func DatabaseUsersToUsers(dbUsers []database.User) []User {
+	users := []User{}
+
+	for _, dbUser := range dbUsers {
+		users = append(users, DatabaseUserToUser(dbUser))
+	}
+	return users
+}

@@ -64,6 +64,42 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const fetchAllUsers = `-- name: FetchAllUsers :many
+SELECT id, created_at, updated_at, first_name, last_name, username, email, password FROM users
+`
+
+func (q *Queries) FetchAllUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, fetchAllUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.FirstName,
+			&i.LastName,
+			&i.Username,
+			&i.Email,
+			&i.Password,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, created_at, updated_at, first_name, last_name, username, email, password FROM users WHERE email = $1
 `

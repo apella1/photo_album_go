@@ -25,3 +25,6 @@ WHERE email = $1;
 SELECT 1
 FROM users
 WHERE username = $1;
+
+-- name: FetchAllUsers :many
+SELECT * FROM users;

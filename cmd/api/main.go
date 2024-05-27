@@ -67,6 +67,7 @@ func main() {
 	}))
 	v1Router := chi.NewRouter()
 	v1Router.Post("/users", handler.HandlerCreateUser)
+	v1Router.Get("/users", handler.HandlerFetchAllUsers)
 	v1Router.Post("/login", handler.LoginUser)
 	v1Router.Get("/get_user", authHandler.AuthMiddleware(handler.GetUserByJWT))
 
