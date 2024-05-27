@@ -20,3 +20,11 @@ DELETE FROM photos
 WHERE id = $1
 AND album_id = $2
 AND user_id = $3;
+
+-- name: FetchPhoto :one
+SELECT * FROM photos WHERE id = $1;
+
+-- name: UpdatePhotoTitle :exec
+UPDATE photos
+SET title = $1
+WHERE id = $2 AND user_id = $3;

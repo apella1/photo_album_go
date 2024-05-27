@@ -14,11 +14,11 @@ import (
 )
 
 func (h *Handler) CreatePhoto(w http.ResponseWriter, r *http.Request, user database.User) {
-	albumIdStr := chi.URLParam(r, "feedFollowID")
+	albumIdStr := chi.URLParam(r, "albumId")
 	albumId, err := uuid.Parse(albumIdStr)
 
 	if err != nil {
-		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse feed follow id: %v", err))
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse album id: %v", err))
 		return
 	}
 
@@ -83,4 +83,73 @@ func (h *Handler) CreatePhoto(w http.ResponseWriter, r *http.Request, user datab
 	}
 
 	utils.RespondWithJSON(w, http.StatusAccepted, utils.DatabasePhotoToPhoto(photo))
+}
+
+func (h *Handler) FetchAlbumPhotos(w http.ResponseWriter, r *http.Request) {
+	albumIdStr := chi.URLParam(r, "albumId")
+	albumId, err := uuid.Parse(albumIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse album id: %v", err))
+		return
+	}
+
+	photos, err := h.Cfg.DB.FetchAlbumPhotos(r.Context(), albumId)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error fetching album photos, %v", err))
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabasePhotosToPhotos(photos))
+}
+
+func (h *Handler) FetchPhoto(w http.ResponseWriter, r *http.Request) {
+	photoIdStr := chi.URLParam(r, "photoId")
+	photoId, err := uuid.Parse(photoIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse photo id: %v", err))
+		return
+	}
+
+	photo, err := h.Cfg.DB.FetchPhoto(r.Context(), photoId)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error fetching photo, %v", err))
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabasePhotoToPhoto(photo))
+}
+
+func (h *Handler) UpdatePhotoTitle(w http.ResponseWriter, r *http.Request, user database.User) {
+	photoIdStr := chi.URLParam(r, "photoId")
+	photoId, err := uuid.Parse(photoIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse photo id: %v", err))
+		return
+	}
+
+	type parameters struct {
+		Title string `json:"title"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	params := parameters{}
+	err = decoder.Decode(&params)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	err = h.Cfg.DB.UpdatePhotoTitle(r.Context(), database.UpdatePhotoTitleParams{
+		Title:  params.Title,
+		ID:     photoId,
+		UserID: user.ID,
+	})
+
+	if err != nil {
+		utils.RespondWithError(w, 500, fmt.Sprintf("Error updating photo: %v", err))
+	}
 }

@@ -112,3 +112,39 @@ func (q *Queries) FetchAlbumPhotos(ctx context.Context, albumID uuid.UUID) ([]Ph
 	}
 	return items, nil
 }
+
+const fetchPhoto = `-- name: FetchPhoto :one
+SELECT id, created_at, updated_at, title, body, album_id, user_id FROM photos WHERE id = $1
+`
+
+func (q *Queries) FetchPhoto(ctx context.Context, id uuid.UUID) (Photo, error) {
+	row := q.db.QueryRowContext(ctx, fetchPhoto, id)
+	var i Photo
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Title,
+		&i.Body,
+		&i.AlbumID,
+		&i.UserID,
+	)
+	return i, err
+}
+
+const updatePhotoTitle = `-- name: UpdatePhotoTitle :exec
+UPDATE photos
+SET title = $1
+WHERE id = $2 AND user_id = $3
+`
+
+type UpdatePhotoTitleParams struct {
+	Title  string
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+func (q *Queries) UpdatePhotoTitle(ctx context.Context, arg UpdatePhotoTitleParams) error {
+	_, err := q.db.ExecContext(ctx, updatePhotoTitle, arg.Title, arg.ID, arg.UserID)
+	return err
+}
