@@ -1,6 +1,11 @@
 package main
 
 import (
+	"album/config"
+	"album/handlers"
+	"album/internal/database"
+	"album/middleware"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -8,6 +13,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 )
 
 func main() {
@@ -28,6 +35,27 @@ func main() {
 		log.Fatal("No database url found!")
 	}
 
+	conn, err := sql.Open("postgres", dbUrl)
+	if err != nil {
+		log.Fatal("Can't connect to the database", err)
+	}
+	err = goose.Up(conn, "sql/schema")
+	if err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+	defer conn.Close()
+	db := database.New(conn)
+
+	apiCfg := config.ApiConfig{
+		DB: db,
+	}
+	authHandler := middleware.MiddlewareHandler{
+		Cfg: &apiCfg,
+	}
+	handler := handlers.Handler{
+		Cfg: &apiCfg,
+	}
+
 	router := chi.NewRouter()
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -38,13 +66,17 @@ func main() {
 		MaxAge:           300,
 	}))
 	v1Router := chi.NewRouter()
+	v1Router.Post("/users", handler.HandlerCreateUser)
+	v1Router.Post("/login", handler.LoginUser)
+	v1Router.Get("/get_user", authHandler.AuthMiddleware(handler.GetUserByJWT))
+
 	router.Mount("/api/v1", v1Router)
 	server := http.Server{
 		Handler: router,
 		Addr:    ":" + portStr,
 	}
 	log.Printf("Server running on port %v", portStr)
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
