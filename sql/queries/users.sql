@@ -17,14 +17,15 @@ RETURNING *;
 SELECT * FROM users WHERE email = $1;
 
 -- name: IsUniqueEmail :one
-SELECT 1
+SELECT COUNT(*) AS is_unique
 FROM users
 WHERE email = $1;
 
 -- name: IsUniqueUsername :one
-SELECT 1
+SELECT COUNT(*) AS is_unique
 FROM users
 WHERE username = $1;
+
 
 -- name: FetchAllUsers :many
 SELECT * FROM users;

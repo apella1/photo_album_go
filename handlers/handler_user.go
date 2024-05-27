@@ -38,27 +38,27 @@ func (h *Handler) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exists, err := h.Cfg.DB.IsUniqueEmail(r.Context(), params.Email)
+	is_unique, err := h.Cfg.DB.IsUniqueEmail(r.Context(), params.Email)
 
 	if err != nil {
-		utils.RespondWithError(w, 500, "Error checking unique email!")
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error checking unique email!")
 		return
 	}
 
-	if exists != 0 {
+	if is_unique > 0 {
 		utils.RespondWithError(w, 400, "User with email already exists!")
 		return
 
 	}
 
-	exists, err = h.Cfg.DB.IsUniqueUsername(r.Context(), params.Username)
+	is_unique, err = h.Cfg.DB.IsUniqueUsername(r.Context(), params.Username)
 
 	if err != nil {
-		utils.RespondWithError(w, 400, "Error checking unique username!")
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error checking unique username!")
 		return
 	}
 
-	if exists != 0 {
+	if is_unique > 0 {
 		utils.RespondWithError(w, 400, "User with username already exists!")
 		return
 
@@ -76,7 +76,7 @@ func (h *Handler) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		utils.RespondWithError(w, 500, "Error creating user!")
+		utils.RespondWithError(w, http.StatusConflict, err.Error())
 		return
 	}
 	utils.RespondWithJSON(w, 200, utils.DatabaseUserToUser(user))
