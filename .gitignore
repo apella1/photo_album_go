@@ -1,0 +1,14 @@
+.vscode
+.idea
+.env
+vendor/
+
+# Go workspace files
+go.work
+tmp/
+
+# main binary
+main
+
+# test binary
+*.test
