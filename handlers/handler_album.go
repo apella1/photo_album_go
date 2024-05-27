@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
@@ -40,8 +41,16 @@ func (h *Handler) CreateAlbum(w http.ResponseWriter, r *http.Request, user datab
 
 }
 
-func (h *Handler) FetchUserAlbums(w http.ResponseWriter, r *http.Request, user database.User) {
-	albums, err := h.Cfg.DB.FetchUserAlbums(r.Context(), user.ID)
+func (h *Handler) FetchUserAlbums(w http.ResponseWriter, r *http.Request) {
+	userIdStr := chi.URLParam(r, "userId")
+	userId, err := uuid.Parse(userIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse user id: %v", err))
+		return
+	}
+
+	albums, err := h.Cfg.DB.FetchUserAlbums(r.Context(), userId)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't fetch user albums: %v", err))
 		return
