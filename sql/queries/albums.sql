@@ -18,3 +18,6 @@ SELECT * FROM albums WHERE user_id = $1;
 DELETE FROM albums
 WHERE id = $1
 AND user_id = $2;
+
+-- name: GetAlbumById :one
+SELECT * FROM albums WHERE id = $1;

@@ -121,27 +121,27 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const isUniqueEmail = `-- name: IsUniqueEmail :one
-SELECT 1
+SELECT COUNT(*) AS is_unique
 FROM users
 WHERE email = $1
 `
 
-func (q *Queries) IsUniqueEmail(ctx context.Context, email string) (int32, error) {
+func (q *Queries) IsUniqueEmail(ctx context.Context, email string) (int64, error) {
 	row := q.db.QueryRowContext(ctx, isUniqueEmail, email)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var is_unique int64
+	err := row.Scan(&is_unique)
+	return is_unique, err
 }
 
 const isUniqueUsername = `-- name: IsUniqueUsername :one
-SELECT 1
+SELECT COUNT(*) AS is_unique
 FROM users
 WHERE username = $1
 `
 
-func (q *Queries) IsUniqueUsername(ctx context.Context, username string) (int32, error) {
+func (q *Queries) IsUniqueUsername(ctx context.Context, username string) (int64, error) {
 	row := q.db.QueryRowContext(ctx, isUniqueUsername, username)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var is_unique int64
+	err := row.Scan(&is_unique)
+	return is_unique, err
 }

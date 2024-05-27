@@ -66,12 +66,16 @@ func main() {
 		MaxAge:           300,
 	}))
 	v1Router := chi.NewRouter()
-	v1Router.Post("/users", handler.HandlerCreateUser)
+	v1Router.Post("/register", handler.HandlerCreateUser)
 	v1Router.Get("/users", handler.HandlerFetchAllUsers)
 	v1Router.Post("/login", handler.LoginUser)
 	v1Router.Get("/get_user", authHandler.AuthMiddleware(handler.GetUserByJWT))
 	v1Router.Post("/albums", authHandler.AuthMiddleware(handler.CreateAlbum))
-	v1Router.Post("/photos", authHandler.AuthMiddleware(handler.CreatePhoto))
+	v1Router.Get("/albums/{userId}", handler.FetchUserAlbums)
+	v1Router.Post("/albums/{albumId}/photos", authHandler.AuthMiddleware(handler.CreatePhoto))
+	v1Router.Patch("/photos/{photoId}", authHandler.AuthMiddleware(handler.UpdatePhotoTitle))
+	v1Router.Get("/albums/{albumId}/photos", handler.FetchAlbumPhotos)
+	v1Router.Get("/photos/{photoId}", handler.FetchPhoto)
 
 	router.Mount("/api/v1", v1Router)
 	server := http.Server{
