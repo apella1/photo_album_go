@@ -39,3 +39,63 @@ func DatabaseUsersToUsers(dbUsers []database.User) []User {
 	}
 	return users
 }
+
+type Album struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Title     string    `json:"title"`
+	Photos    [][]byte  `json:"photos"`
+	UserID    uuid.UUID `json:"user_id"`
+}
+
+func DatabaseAlbumToAlbum(dbAlbum database.Album) Album {
+	return Album{
+		ID:        dbAlbum.ID,
+		CreatedAt: dbAlbum.CreatedAt,
+		UpdatedAt: dbAlbum.UpdatedAt,
+		Title:     dbAlbum.Title,
+		UserID:    dbAlbum.UserID,
+		Photos:    dbAlbum.Photos,
+	}
+}
+
+func DatabaseAlbumsToAlbums(dbAlbums []database.Album) []Album {
+	albums := []Album{}
+
+	for _, dbAlbum := range dbAlbums {
+		albums = append(albums, DatabaseAlbumToAlbum(dbAlbum))
+	}
+	return albums
+}
+
+type Photo struct {
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	AlbumID   uuid.UUID `json:"album_id"`
+	Title     string    `json:"title"`
+	UserId    uuid.UUID `json:"user_id"`
+	Body      []byte    `json:"body"`
+}
+
+func DatabasePhotoToPhoto(dbPhoto database.Photo) Photo {
+	return Photo{
+		ID:        dbPhoto.ID,
+		CreatedAt: dbPhoto.CreatedAt,
+		UpdatedAt: dbPhoto.UpdatedAt,
+		AlbumID:   dbPhoto.AlbumID,
+		Title:     dbPhoto.Title,
+		UserId:    dbPhoto.UserID,
+		Body:      dbPhoto.Body,
+	}
+}
+
+func DatabasePhotosToPhotos(dbPhotos []database.Photo) []Photo {
+	photos := []Photo{}
+
+	for _, dbPhoto := range dbPhotos {
+		photos = append(photos, DatabasePhotoToPhoto(dbPhoto))
+	}
+	return photos
+}
