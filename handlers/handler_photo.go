@@ -5,21 +5,65 @@ import (
 	"album/utils"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
 func (h *Handler) CreatePhoto(w http.ResponseWriter, r *http.Request, user database.User) {
+	albumIdStr := chi.URLParam(r, "feedFollowID")
+	albumId, err := uuid.Parse(albumIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse feed follow id: %v", err))
+		return
+	}
+
 	type parameters struct {
 		Title string `json:"title"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 	if err != nil {
 		utils.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	file, fileHeader, err := r.FormFile("photo")
+	if err != nil {
+		if err == http.ErrMissingFile {
+			utils.RespondWithError(w, 400, "No file uploaded!")
+			return
+		}
+		utils.RespondWithError(w, 500, fmt.Sprintf("Error getting uploaded file: %v", err))
+		return
+	}
+
+	if fileHeader.Size > 1024*1024*1 {
+		utils.RespondWithError(w, 400, "File size exceeds limit!")
+		return
+	}
+
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		utils.RespondWithError(w, 500, fmt.Sprintf("Error reading uploaded file: %v", err))
+		return
+	}
+
+	defer file.Close()
+
+	album, err := h.Cfg.DB.GetAlbumById(r.Context(), albumId)
+	if err != nil {
+		utils.RespondWithError(w, 400, "Error retrieving album!")
+		return
+	}
+
+	if album.UserID != user.ID {
+		utils.RespondWithError(w, 403, "Unauthorized! You can only upload photos to your own albums!")
 		return
 	}
 
@@ -28,7 +72,9 @@ func (h *Handler) CreatePhoto(w http.ResponseWriter, r *http.Request, user datab
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Title:     params.Title,
+		Body:      fileBytes,
 		UserID:    user.ID,
+		AlbumID:   albumId,
 	})
 
 	if err != nil {

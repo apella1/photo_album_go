@@ -106,3 +106,21 @@ func (q *Queries) FetchUserAlbums(ctx context.Context, userID uuid.UUID) ([]Albu
 	}
 	return items, nil
 }
+
+const getAlbumById = `-- name: GetAlbumById :one
+SELECT id, created_at, updated_at, title, photos, user_id FROM albums WHERE id = $1
+`
+
+func (q *Queries) GetAlbumById(ctx context.Context, id uuid.UUID) (Album, error) {
+	row := q.db.QueryRowContext(ctx, getAlbumById, id)
+	var i Album
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Title,
+		pq.Array(&i.Photos),
+		&i.UserID,
+	)
+	return i, err
+}
