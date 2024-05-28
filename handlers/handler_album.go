@@ -78,10 +78,10 @@ func (h *Handler) FetchAlbumById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.Cfg.DB.GetAlbumById(r.Context(), albumId)
+	album, err := h.Cfg.DB.GetAlbumById(r.Context(), albumId)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't fetch album: %v", err))
 		return
 	}
-	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumToAlbum(user))
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumToAlbum(album))
 }
