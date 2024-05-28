@@ -28,3 +28,6 @@ SELECT * FROM photos WHERE id = $1;
 UPDATE photos
 SET title = $1
 WHERE id = $2 AND user_id = $3;
+
+-- name: GetAllPhotos :many
+SELECT * FROM photos;

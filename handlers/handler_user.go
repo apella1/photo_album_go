@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -90,4 +91,22 @@ func (h *Handler) HandlerFetchAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseUsersToUsers(dbUsers))
+}
+
+func (h *Handler) FetchUserById(w http.ResponseWriter, r *http.Request) {
+	userIdStr := chi.URLParam(r, "userId")
+	userId, err := uuid.Parse(userIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse user id: %v", err))
+		return
+	}
+
+	user, err := h.Cfg.DB.GetUserById(r.Context(), userId)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't fetch user : %v", err))
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseUserToUser(user))
+
 }

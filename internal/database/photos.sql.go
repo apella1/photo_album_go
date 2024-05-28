@@ -132,6 +132,41 @@ func (q *Queries) FetchPhoto(ctx context.Context, id uuid.UUID) (Photo, error) {
 	return i, err
 }
 
+const getAllPhotos = `-- name: GetAllPhotos :many
+SELECT id, created_at, updated_at, title, body, album_id, user_id FROM photos
+`
+
+func (q *Queries) GetAllPhotos(ctx context.Context) ([]Photo, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPhotos)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Photo
+	for rows.Next() {
+		var i Photo
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Body,
+			&i.AlbumID,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updatePhotoTitle = `-- name: UpdatePhotoTitle :exec
 UPDATE photos
 SET title = $1

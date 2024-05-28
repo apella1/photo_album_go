@@ -153,3 +153,13 @@ func (h *Handler) UpdatePhotoTitle(w http.ResponseWriter, r *http.Request, user 
 		utils.RespondWithError(w, 500, fmt.Sprintf("Error updating photo: %v", err))
 	}
 }
+
+func (h *Handler) FetchAllPhotos(w http.ResponseWriter, r *http.Request) {
+	dbPhotos, err := h.Cfg.DB.GetAllPhotos(r.Context())
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error fetching photos, %v", err))
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabasePhotosToPhotos(dbPhotos))
+}
