@@ -73,6 +73,40 @@ func (q *Queries) DeleteAlbum(ctx context.Context, arg DeleteAlbumParams) error 
 	return err
 }
 
+const fetchAllAlbums = `-- name: FetchAllAlbums :many
+SELECT id, created_at, updated_at, title, photos, user_id FROM albums
+`
+
+func (q *Queries) FetchAllAlbums(ctx context.Context) ([]Album, error) {
+	rows, err := q.db.QueryContext(ctx, fetchAllAlbums)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Album
+	for rows.Next() {
+		var i Album
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			pq.Array(&i.Photos),
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const fetchUserAlbums = `-- name: FetchUserAlbums :many
 SELECT id, created_at, updated_at, title, photos, user_id FROM albums WHERE user_id = $1
 `

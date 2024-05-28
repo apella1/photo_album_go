@@ -58,3 +58,13 @@ func (h *Handler) FetchUserAlbums(w http.ResponseWriter, r *http.Request) {
 	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumsToAlbums(albums))
 
 }
+
+func (h *Handler) FetchAllAlbums(w http.ResponseWriter, r *http.Request) {
+	dbAlbums, err := h.Cfg.DB.FetchAllAlbums(r.Context())
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error fetching albums, %v", err))
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumsToAlbums(dbAlbums))
+}

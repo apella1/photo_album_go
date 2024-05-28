@@ -71,6 +71,7 @@ func main() {
 	v1Router.Post("/login", handler.LoginUser)
 	v1Router.Get("/get_user", authHandler.AuthMiddleware(handler.GetUserByJWT))
 	v1Router.Post("/albums", authHandler.AuthMiddleware(handler.CreateAlbum))
+	v1Router.Get("/albums", handler.FetchAllAlbums)
 	v1Router.Get("/albums/{userId}", handler.FetchUserAlbums)
 	v1Router.Post("/albums/{albumId}/photos", authHandler.AuthMiddleware(handler.CreatePhoto))
 	v1Router.Patch("/photos/{photoId}", authHandler.AuthMiddleware(handler.UpdatePhotoTitle))

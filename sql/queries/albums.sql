@@ -21,3 +21,6 @@ AND user_id = $2;
 
 -- name: GetAlbumById :one
 SELECT * FROM albums WHERE id = $1;
+
+-- name: FetchAllAlbums :many
+SELECT * FROM albums;
