@@ -68,3 +68,20 @@ func (h *Handler) FetchAllAlbums(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumsToAlbums(dbAlbums))
 }
+
+func (h *Handler) FetchAlbumById(w http.ResponseWriter, r *http.Request) {
+	albumIdStr := chi.URLParam(r, "albumId")
+	albumId, err := uuid.Parse(albumIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse album id: %v", err))
+		return
+	}
+
+	user, err := h.Cfg.DB.GetAlbumById(r.Context(), albumId)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't fetch album: %v", err))
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumToAlbum(user))
+}
