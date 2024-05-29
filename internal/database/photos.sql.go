@@ -35,7 +35,6 @@ type CreatePhotoParams struct {
 	Body      []byte
 	AlbumID   uuid.UUID
 	UserID    uuid.UUID
-	ImgUrl    string
 }
 
 func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo, error) {

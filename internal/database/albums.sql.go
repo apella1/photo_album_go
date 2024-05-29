@@ -19,11 +19,10 @@ INSERT INTO
         created_at,
         updated_at,
         title,
-        photos,
         user_id
     )
-VALUES($1, $2, $3, $4, $5, $6)
-RETURNING id, created_at, updated_at, title, photos, user_id
+VALUES($1, $2, $3, $4, $5)
+RETURNING id, created_at, updated_at, title, user_id
 `
 
 type CreateAlbumParams struct {
@@ -70,7 +69,7 @@ func (q *Queries) DeleteAlbum(ctx context.Context, arg DeleteAlbumParams) error 
 }
 
 const fetchAllAlbums = `-- name: FetchAllAlbums :many
-SELECT id, created_at, updated_at, title, photos, user_id FROM albums
+SELECT id, created_at, updated_at, title, user_id FROM albums
 `
 
 func (q *Queries) FetchAllAlbums(ctx context.Context) ([]Album, error) {
@@ -103,7 +102,7 @@ func (q *Queries) FetchAllAlbums(ctx context.Context) ([]Album, error) {
 }
 
 const fetchUserAlbums = `-- name: FetchUserAlbums :many
-SELECT id, created_at, updated_at, title, photos, user_id FROM albums WHERE user_id = $1
+SELECT id, created_at, updated_at, title, user_id FROM albums WHERE user_id = $1
 `
 
 func (q *Queries) FetchUserAlbums(ctx context.Context, userID uuid.UUID) ([]Album, error) {
@@ -136,7 +135,7 @@ func (q *Queries) FetchUserAlbums(ctx context.Context, userID uuid.UUID) ([]Albu
 }
 
 const getAlbumById = `-- name: GetAlbumById :one
-SELECT id, created_at, updated_at, title, photos, user_id FROM albums WHERE id = $1
+SELECT id, created_at, updated_at, title, user_id FROM albums WHERE id = $1
 `
 
 func (q *Queries) GetAlbumById(ctx context.Context, id uuid.UUID) (Album, error) {
