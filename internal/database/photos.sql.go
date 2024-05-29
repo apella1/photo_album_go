@@ -67,18 +67,16 @@ func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo
 const deletePhoto = `-- name: DeletePhoto :exec
 DELETE FROM photos
 WHERE id = $1
-AND album_id = $2
-AND user_id = $3
+AND user_id = $2
 `
 
 type DeletePhotoParams struct {
-	ID      uuid.UUID
-	AlbumID uuid.UUID
-	UserID  uuid.UUID
+	ID     uuid.UUID
+	UserID uuid.UUID
 }
 
 func (q *Queries) DeletePhoto(ctx context.Context, arg DeletePhotoParams) error {
-	_, err := q.db.ExecContext(ctx, deletePhoto, arg.ID, arg.AlbumID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, deletePhoto, arg.ID, arg.UserID)
 	return err
 }
 

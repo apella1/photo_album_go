@@ -16,12 +16,6 @@ RETURNING *;
 -- name: FetchAlbumPhotos :many
 SELECT * FROM photos WHERE album_id = $1;
 
--- name: DeletePhoto :exec
-DELETE FROM photos
-WHERE id = $1
-AND album_id = $2
-AND user_id = $3;
-
 -- name: FetchPhoto :one
 SELECT * FROM photos WHERE id = $1;
 
