@@ -15,7 +15,6 @@ type Album struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Title     string
-	Photos    [][]byte
 	UserID    uuid.UUID
 }
 
@@ -27,6 +26,7 @@ type Photo struct {
 	Body      []byte
 	AlbumID   uuid.UUID
 	UserID    uuid.UUID
+	ImgUrl    string
 }
 
 type User struct {

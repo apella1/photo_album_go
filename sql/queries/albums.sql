@@ -5,10 +5,9 @@ INSERT INTO
         created_at,
         updated_at,
         title,
-        photos,
         user_id
     )
-VALUES($1, $2, $3, $4, $5, $6)
+VALUES($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: FetchUserAlbums :many
@@ -21,3 +20,6 @@ AND user_id = $2;
 
 -- name: GetAlbumById :one
 SELECT * FROM albums WHERE id = $1;
+
+-- name: FetchAllAlbums :many
+SELECT * FROM albums;

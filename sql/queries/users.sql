@@ -29,3 +29,6 @@ WHERE username = $1;
 
 -- name: FetchAllUsers :many
 SELECT * FROM users;
+
+-- name: GetUserById :one
+SELECT * FROM users WHERE id = $1;

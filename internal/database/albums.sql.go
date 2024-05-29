@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 const createAlbum = `-- name: CreateAlbum :one
@@ -20,11 +19,10 @@ INSERT INTO
         created_at,
         updated_at,
         title,
-        photos,
         user_id
     )
-VALUES($1, $2, $3, $4, $5, $6)
-RETURNING id, created_at, updated_at, title, photos, user_id
+VALUES($1, $2, $3, $4, $5)
+RETURNING id, created_at, updated_at, title, user_id
 `
 
 type CreateAlbumParams struct {
@@ -32,7 +30,6 @@ type CreateAlbumParams struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Title     string
-	Photos    [][]byte
 	UserID    uuid.UUID
 }
 
@@ -42,7 +39,6 @@ func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album
 		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.Title,
-		pq.Array(arg.Photos),
 		arg.UserID,
 	)
 	var i Album
@@ -51,7 +47,6 @@ func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Title,
-		pq.Array(&i.Photos),
 		&i.UserID,
 	)
 	return i, err
@@ -73,8 +68,41 @@ func (q *Queries) DeleteAlbum(ctx context.Context, arg DeleteAlbumParams) error 
 	return err
 }
 
+const fetchAllAlbums = `-- name: FetchAllAlbums :many
+SELECT id, created_at, updated_at, title, user_id FROM albums
+`
+
+func (q *Queries) FetchAllAlbums(ctx context.Context) ([]Album, error) {
+	rows, err := q.db.QueryContext(ctx, fetchAllAlbums)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Album
+	for rows.Next() {
+		var i Album
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const fetchUserAlbums = `-- name: FetchUserAlbums :many
-SELECT id, created_at, updated_at, title, photos, user_id FROM albums WHERE user_id = $1
+SELECT id, created_at, updated_at, title, user_id FROM albums WHERE user_id = $1
 `
 
 func (q *Queries) FetchUserAlbums(ctx context.Context, userID uuid.UUID) ([]Album, error) {
@@ -91,7 +119,6 @@ func (q *Queries) FetchUserAlbums(ctx context.Context, userID uuid.UUID) ([]Albu
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Title,
-			pq.Array(&i.Photos),
 			&i.UserID,
 		); err != nil {
 			return nil, err
@@ -108,7 +135,7 @@ func (q *Queries) FetchUserAlbums(ctx context.Context, userID uuid.UUID) ([]Albu
 }
 
 const getAlbumById = `-- name: GetAlbumById :one
-SELECT id, created_at, updated_at, title, photos, user_id FROM albums WHERE id = $1
+SELECT id, created_at, updated_at, title, user_id FROM albums WHERE id = $1
 `
 
 func (q *Queries) GetAlbumById(ctx context.Context, id uuid.UUID) (Album, error) {
@@ -119,7 +146,6 @@ func (q *Queries) GetAlbumById(ctx context.Context, id uuid.UUID) (Album, error)
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Title,
-		pq.Array(&i.Photos),
 		&i.UserID,
 	)
 	return i, err

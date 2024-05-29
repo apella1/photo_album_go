@@ -21,10 +21,11 @@ INSERT INTO
         title,
         body,
         album_id,
-        user_id
+        user_id,
+        img_url
     )
-VALUES($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, created_at, updated_at, title, body, album_id, user_id
+VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, created_at, updated_at, title, body, album_id, user_id, img_url
 `
 
 type CreatePhotoParams struct {
@@ -35,6 +36,7 @@ type CreatePhotoParams struct {
 	Body      []byte
 	AlbumID   uuid.UUID
 	UserID    uuid.UUID
+	ImgUrl    string
 }
 
 func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo, error) {
@@ -46,6 +48,7 @@ func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo
 		arg.Body,
 		arg.AlbumID,
 		arg.UserID,
+		arg.ImgUrl,
 	)
 	var i Photo
 	err := row.Scan(
@@ -56,6 +59,7 @@ func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo
 		&i.Body,
 		&i.AlbumID,
 		&i.UserID,
+		&i.ImgUrl,
 	)
 	return i, err
 }
@@ -63,23 +67,21 @@ func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo
 const deletePhoto = `-- name: DeletePhoto :exec
 DELETE FROM photos
 WHERE id = $1
-AND album_id = $2
-AND user_id = $3
+AND user_id = $2
 `
 
 type DeletePhotoParams struct {
-	ID      uuid.UUID
-	AlbumID uuid.UUID
-	UserID  uuid.UUID
+	ID     uuid.UUID
+	UserID uuid.UUID
 }
 
 func (q *Queries) DeletePhoto(ctx context.Context, arg DeletePhotoParams) error {
-	_, err := q.db.ExecContext(ctx, deletePhoto, arg.ID, arg.AlbumID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, deletePhoto, arg.ID, arg.UserID)
 	return err
 }
 
 const fetchAlbumPhotos = `-- name: FetchAlbumPhotos :many
-SELECT id, created_at, updated_at, title, body, album_id, user_id FROM photos WHERE album_id = $1
+SELECT id, created_at, updated_at, title, body, album_id, user_id, img_url FROM photos WHERE album_id = $1
 `
 
 func (q *Queries) FetchAlbumPhotos(ctx context.Context, albumID uuid.UUID) ([]Photo, error) {
@@ -99,6 +101,7 @@ func (q *Queries) FetchAlbumPhotos(ctx context.Context, albumID uuid.UUID) ([]Ph
 			&i.Body,
 			&i.AlbumID,
 			&i.UserID,
+			&i.ImgUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -114,7 +117,7 @@ func (q *Queries) FetchAlbumPhotos(ctx context.Context, albumID uuid.UUID) ([]Ph
 }
 
 const fetchPhoto = `-- name: FetchPhoto :one
-SELECT id, created_at, updated_at, title, body, album_id, user_id FROM photos WHERE id = $1
+SELECT id, created_at, updated_at, title, body, album_id, user_id, img_url FROM photos WHERE id = $1
 `
 
 func (q *Queries) FetchPhoto(ctx context.Context, id uuid.UUID) (Photo, error) {
@@ -128,8 +131,45 @@ func (q *Queries) FetchPhoto(ctx context.Context, id uuid.UUID) (Photo, error) {
 		&i.Body,
 		&i.AlbumID,
 		&i.UserID,
+		&i.ImgUrl,
 	)
 	return i, err
+}
+
+const getAllPhotos = `-- name: GetAllPhotos :many
+SELECT id, created_at, updated_at, title, body, album_id, user_id, img_url FROM photos
+`
+
+func (q *Queries) GetAllPhotos(ctx context.Context) ([]Photo, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPhotos)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Photo
+	for rows.Next() {
+		var i Photo
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Body,
+			&i.AlbumID,
+			&i.UserID,
+			&i.ImgUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updatePhotoTitle = `-- name: UpdatePhotoTitle :exec

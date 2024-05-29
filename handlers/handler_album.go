@@ -37,8 +37,42 @@ func (h *Handler) CreateAlbum(w http.ResponseWriter, r *http.Request, user datab
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusAccepted, utils.DatabaseAlbumToAlbum(album))
+	utils.RespondWithJSON(w, http.StatusCreated, utils.DatabaseAlbumToAlbum(album))
 
+}
+
+func (h *Handler) DeleteAlbum(w http.ResponseWriter, r *http.Request, user database.User) {
+	albumIdStr := chi.URLParam(r, "albumId")
+	albumId, err := uuid.Parse(albumIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse album id: %v", err))
+		return
+	}
+
+	album, err := h.Cfg.DB.GetAlbumById(r.Context(), albumId)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't fetch album: %v", err))
+		return
+	}
+
+	if album.UserID != user.ID {
+		utils.RespondWithError(w, http.StatusBadRequest, "You don't have permission to delete this album")
+		return
+	}
+
+	err = h.Cfg.DB.DeleteAlbum(r.Context(), database.DeleteAlbumParams{
+		ID:     albumId,
+		UserID: user.ID,
+	})
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't delete album: %v", err))
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, nil)
 }
 
 func (h *Handler) FetchUserAlbums(w http.ResponseWriter, r *http.Request) {
@@ -57,4 +91,31 @@ func (h *Handler) FetchUserAlbums(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumsToAlbums(albums))
 
+}
+
+func (h *Handler) FetchAllAlbums(w http.ResponseWriter, r *http.Request) {
+	dbAlbums, err := h.Cfg.DB.FetchAllAlbums(r.Context())
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error fetching albums, %v", err))
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumsToAlbums(dbAlbums))
+}
+
+func (h *Handler) FetchAlbumById(w http.ResponseWriter, r *http.Request) {
+	albumIdStr := chi.URLParam(r, "albumId")
+	albumId, err := uuid.Parse(albumIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse album id: %v", err))
+		return
+	}
+
+	album, err := h.Cfg.DB.GetAlbumById(r.Context(), albumId)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't fetch album: %v", err))
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, utils.DatabaseAlbumToAlbum(album))
 }
