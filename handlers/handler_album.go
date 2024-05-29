@@ -37,7 +37,7 @@ func (h *Handler) CreateAlbum(w http.ResponseWriter, r *http.Request, user datab
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusAccepted, utils.DatabaseAlbumToAlbum(album))
+	utils.RespondWithJSON(w, http.StatusCreated, utils.DatabaseAlbumToAlbum(album))
 
 }
 
