@@ -88,7 +88,7 @@ func DatabasePhotoToPhoto(dbPhoto database.Photo) Photo {
 		Title:     dbPhoto.Title,
 		UserId:    dbPhoto.UserID,
 		Body:      dbPhoto.Body,
-		ImageURL:  dbPhoto.ImgUrl.String,
+		ImageURL:  dbPhoto.ImgUrl,
 	}
 }
 

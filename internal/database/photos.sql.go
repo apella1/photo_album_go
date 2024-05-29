@@ -21,9 +21,10 @@ INSERT INTO
         title,
         body,
         album_id,
-        user_id
+        user_id,
+        img_url
     )
-VALUES($1, $2, $3, $4, $5, $6, $7)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id, created_at, updated_at, title, body, album_id, user_id, img_url
 `
 
@@ -35,6 +36,7 @@ type CreatePhotoParams struct {
 	Body      []byte
 	AlbumID   uuid.UUID
 	UserID    uuid.UUID
+	ImgUrl    string
 }
 
 func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo, error) {
@@ -46,6 +48,7 @@ func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo
 		arg.Body,
 		arg.AlbumID,
 		arg.UserID,
+		arg.ImgUrl,
 	)
 	var i Photo
 	err := row.Scan(
