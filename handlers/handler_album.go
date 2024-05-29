@@ -41,6 +41,40 @@ func (h *Handler) CreateAlbum(w http.ResponseWriter, r *http.Request, user datab
 
 }
 
+func (h *Handler) DeleteAlbum(w http.ResponseWriter, r *http.Request, user database.User) {
+	albumIdStr := chi.URLParam(r, "albumId")
+	albumId, err := uuid.Parse(albumIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse album id: %v", err))
+		return
+	}
+
+	album, err := h.Cfg.DB.GetAlbumById(r.Context(), albumId)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't fetch album: %v", err))
+		return
+	}
+
+	if album.UserID != user.ID {
+		utils.RespondWithError(w, http.StatusBadRequest, "You don't have permission to delete this album")
+		return
+	}
+
+	err = h.Cfg.DB.DeleteAlbum(r.Context(), database.DeleteAlbumParams{
+		ID:     albumId,
+		UserID: user.ID,
+	})
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't delete album: %v", err))
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, nil)
+}
+
 func (h *Handler) FetchUserAlbums(w http.ResponseWriter, r *http.Request) {
 	userIdStr := chi.URLParam(r, "userId")
 	userId, err := uuid.Parse(userIdStr)

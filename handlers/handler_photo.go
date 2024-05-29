@@ -167,3 +167,34 @@ func (h *Handler) FetchAllPhotos(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondWithJSON(w, http.StatusOK, utils.DatabasePhotosToPhotos(dbPhotos))
 }
+
+func (h *Handler) DeletePhoto(w http.ResponseWriter, r *http.Request, user database.User) {
+	photoIdStr := chi.URLParam(r, "photoId")
+	photoId, err := uuid.Parse(photoIdStr)
+
+	if err != nil {
+		utils.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse photo id: %v", err))
+		return
+	}
+
+	photo, err := h.Cfg.DB.FetchPhoto(r.Context(), photoId)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Couldn't fetch photo: %v", err))
+		return
+	}
+
+	if photo.UserID != user.ID {
+		utils.RespondWithError(w, http.StatusBadRequest, "You don't have permission to delete this photo")
+		return
+	}
+
+	err = h.Cfg.DB.DeletePhoto(r.Context(), database.DeletePhotoParams{
+		ID:     photoId,
+		UserID: user.ID,
+	})
+
+	if err != nil {
+		utils.RespondWithError(w, 500, fmt.Sprintf("Error deleting photo: %v", err))
+	}
+}

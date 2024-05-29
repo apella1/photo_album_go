@@ -32,3 +32,8 @@ WHERE id = $2 AND user_id = $3;
 
 -- name: GetAllPhotos :many
 SELECT * FROM photos;
+
+-- name: DeletePhoto :exec
+DELETE FROM photos
+WHERE id = $1
+AND user_id = $2;

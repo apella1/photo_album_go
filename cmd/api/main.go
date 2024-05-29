@@ -74,11 +74,13 @@ func main() {
 	v1Router.Post("/albums", authHandler.AuthMiddleware(handler.CreateAlbum))
 	v1Router.Get("/albums", handler.FetchAllAlbums)
 	v1Router.Get("/albums/{albumId}", handler.FetchAlbumById)
+	v1Router.Delete("/albums/{albumId}", authHandler.AuthMiddleware(handler.DeleteAlbum))
 	v1Router.Get("/users/albums/{userId}", handler.FetchUserAlbums)
 	v1Router.Post("/albums/{albumId}/photos", authHandler.AuthMiddleware(handler.CreatePhoto))
 	v1Router.Patch("/photos/{photoId}", authHandler.AuthMiddleware(handler.UpdatePhotoTitle))
 	v1Router.Get("/albums/{albumId}/photos", handler.FetchAlbumPhotos)
 	v1Router.Get("/photos/{photoId}", handler.FetchPhoto)
+	v1Router.Delete("/photos/{photoId}", authHandler.AuthMiddleware(handler.DeletePhoto))
 	v1Router.Get("/photos", handler.FetchAllPhotos)
 
 	router.Mount("/api/v1", v1Router)
