@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 const createAlbum = `-- name: CreateAlbum :one
@@ -32,7 +31,6 @@ type CreateAlbumParams struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Title     string
-	Photos    [][]byte
 	UserID    uuid.UUID
 }
 
@@ -42,7 +40,6 @@ func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album
 		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.Title,
-		pq.Array(arg.Photos),
 		arg.UserID,
 	)
 	var i Album
@@ -51,7 +48,6 @@ func (q *Queries) CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Title,
-		pq.Array(&i.Photos),
 		&i.UserID,
 	)
 	return i, err
@@ -91,7 +87,6 @@ func (q *Queries) FetchAllAlbums(ctx context.Context) ([]Album, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Title,
-			pq.Array(&i.Photos),
 			&i.UserID,
 		); err != nil {
 			return nil, err
@@ -125,7 +120,6 @@ func (q *Queries) FetchUserAlbums(ctx context.Context, userID uuid.UUID) ([]Albu
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Title,
-			pq.Array(&i.Photos),
 			&i.UserID,
 		); err != nil {
 			return nil, err
@@ -153,7 +147,6 @@ func (q *Queries) GetAlbumById(ctx context.Context, id uuid.UUID) (Album, error)
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Title,
-		pq.Array(&i.Photos),
 		&i.UserID,
 	)
 	return i, err

@@ -5,6 +5,7 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,7 +16,6 @@ type Album struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Title     string
-	Photos    [][]byte
 	UserID    uuid.UUID
 }
 
@@ -27,6 +27,7 @@ type Photo struct {
 	Body      []byte
 	AlbumID   uuid.UUID
 	UserID    uuid.UUID
+	ImgUrl    sql.NullString
 }
 
 type User struct {

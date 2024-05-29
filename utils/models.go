@@ -56,7 +56,6 @@ func DatabaseAlbumToAlbum(dbAlbum database.Album) Album {
 		UpdatedAt: dbAlbum.UpdatedAt,
 		Title:     dbAlbum.Title,
 		UserID:    dbAlbum.UserID,
-		Photos:    dbAlbum.Photos,
 	}
 }
 
@@ -77,6 +76,7 @@ type Photo struct {
 	Title     string    `json:"title"`
 	UserId    uuid.UUID `json:"user_id"`
 	Body      []byte    `json:"body"`
+	ImageURL  string    `json:"image_url"`
 }
 
 func DatabasePhotoToPhoto(dbPhoto database.Photo) Photo {
@@ -88,6 +88,7 @@ func DatabasePhotoToPhoto(dbPhoto database.Photo) Photo {
 		Title:     dbPhoto.Title,
 		UserId:    dbPhoto.UserID,
 		Body:      dbPhoto.Body,
+		ImageURL:  dbPhoto.ImgUrl.String,
 	}
 }
 

@@ -24,7 +24,7 @@ INSERT INTO
         user_id
     )
 VALUES($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, created_at, updated_at, title, body, album_id, user_id
+RETURNING id, created_at, updated_at, title, body, album_id, user_id, img_url
 `
 
 type CreatePhotoParams struct {
@@ -35,6 +35,7 @@ type CreatePhotoParams struct {
 	Body      []byte
 	AlbumID   uuid.UUID
 	UserID    uuid.UUID
+	ImgUrl    string
 }
 
 func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo, error) {
@@ -56,6 +57,7 @@ func (q *Queries) CreatePhoto(ctx context.Context, arg CreatePhotoParams) (Photo
 		&i.Body,
 		&i.AlbumID,
 		&i.UserID,
+		&i.ImgUrl,
 	)
 	return i, err
 }
@@ -79,7 +81,7 @@ func (q *Queries) DeletePhoto(ctx context.Context, arg DeletePhotoParams) error 
 }
 
 const fetchAlbumPhotos = `-- name: FetchAlbumPhotos :many
-SELECT id, created_at, updated_at, title, body, album_id, user_id FROM photos WHERE album_id = $1
+SELECT id, created_at, updated_at, title, body, album_id, user_id, img_url FROM photos WHERE album_id = $1
 `
 
 func (q *Queries) FetchAlbumPhotos(ctx context.Context, albumID uuid.UUID) ([]Photo, error) {
@@ -99,6 +101,7 @@ func (q *Queries) FetchAlbumPhotos(ctx context.Context, albumID uuid.UUID) ([]Ph
 			&i.Body,
 			&i.AlbumID,
 			&i.UserID,
+			&i.ImgUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -114,7 +117,7 @@ func (q *Queries) FetchAlbumPhotos(ctx context.Context, albumID uuid.UUID) ([]Ph
 }
 
 const fetchPhoto = `-- name: FetchPhoto :one
-SELECT id, created_at, updated_at, title, body, album_id, user_id FROM photos WHERE id = $1
+SELECT id, created_at, updated_at, title, body, album_id, user_id, img_url FROM photos WHERE id = $1
 `
 
 func (q *Queries) FetchPhoto(ctx context.Context, id uuid.UUID) (Photo, error) {
@@ -128,12 +131,13 @@ func (q *Queries) FetchPhoto(ctx context.Context, id uuid.UUID) (Photo, error) {
 		&i.Body,
 		&i.AlbumID,
 		&i.UserID,
+		&i.ImgUrl,
 	)
 	return i, err
 }
 
 const getAllPhotos = `-- name: GetAllPhotos :many
-SELECT id, created_at, updated_at, title, body, album_id, user_id FROM photos
+SELECT id, created_at, updated_at, title, body, album_id, user_id, img_url FROM photos
 `
 
 func (q *Queries) GetAllPhotos(ctx context.Context) ([]Photo, error) {
@@ -153,6 +157,7 @@ func (q *Queries) GetAllPhotos(ctx context.Context) ([]Photo, error) {
 			&i.Body,
 			&i.AlbumID,
 			&i.UserID,
+			&i.ImgUrl,
 		); err != nil {
 			return nil, err
 		}
