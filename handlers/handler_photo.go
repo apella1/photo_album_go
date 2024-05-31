@@ -23,7 +23,10 @@ func (h *Handler) CreatePhoto(w http.ResponseWriter, r *http.Request, user datab
 		return
 	}
 
-	err = r.ParseMultipartForm(10 << 20)
+	const maxUploadSize = 400 * 1024
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
+
+	err = r.ParseMultipartForm(maxUploadSize)
 	if err != nil {
 		utils.RespondWithError(w, 400, fmt.Sprintf("Error parsing multipart form: %v", err))
 		return
@@ -46,8 +49,8 @@ func (h *Handler) CreatePhoto(w http.ResponseWriter, r *http.Request, user datab
 	}
 	defer file.Close()
 
-	if fileHeader.Size > 1024*1024*1 {
-		utils.RespondWithError(w, 400, "File size exceeds 1MB limit!")
+	if fileHeader.Size > maxUploadSize {
+		utils.RespondWithError(w, 400, "File size exceeds 400KB limit!")
 		return
 	}
 
